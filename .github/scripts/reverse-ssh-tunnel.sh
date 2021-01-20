@@ -9,8 +9,8 @@ loglevel_debug=4
 # Defaults - override if necessary
 : ${REVERSE_SSH_SLEEPTIME:=21600} # Max time until a GitHub Action runner times out
 : ${REVERSE_SSH_REMOTE_PORT:=32022}
-: ${REVERSE_SSH_VERBOSE:=""}
-: ${REVERSE_SSH_LOGLEVEL:=${loglevel_info}}
+: ${REVERSE_SSH_VERBOSE:="-v"}
+: ${REVERSE_SSH_LOGLEVEL:=${loglevel_debug}}
 
 # This should be inherited from the runner
 : ${TMPDIR="/tmp"}
