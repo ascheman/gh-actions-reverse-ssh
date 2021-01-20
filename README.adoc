@@ -1,2 +1,112 @@
-:author: Gerd Aschemann
 = SSH Tunnel into GitHub Action Runner
+include::.asciidoctorconfig[]
+:imagesdir: src/docs/images
+
+:author: Gerd Aschemann
+:email: gerd@aschemann.net
+:twitter: @GerdAschemann
+
+[.lead]
+.TL;DR
+====
+SSH into your GitHub (GH) Action Runner!
+The Action Runner is simply a Virtual Machine (running Ubuntu Linux) which executes the Action pipeline (Job).
+It provides Docker for containerized Actions and may other tools for your convenience.
+If you want to develop your CI/CD pipelines interactively, you definitely need this.
+
+The only thing you need is a publicly available SSH server (on a public cloud for instance).
+The provided Action logs into your SSH server and opens a tunnel back to the Action Runner machine.
+Then you can log in to the Action Runner VM via this SSH tunnel from your external server.
+====
+
+[plantuml,ssh-tunnel,svg]
+.SSH tunnel architecture
+----
+@startuml
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 20
+skinparam maxmessagesize 60
+skinparam sequenceParticipant underline
+!pragma teoz true
+autonumber
+
+box "GitHub Action Runner\n<<Virtual Machine>>"
+actor "GitHub Action Job" as job #green
+boundary "ssh client github" as ssh_client_gh #lightgreen
+control "ssh daemon github" as ssh_daemon_gh #lightgreen
+control "shell github" as shell_github #lightgreen
+end box
+
+box "Your Server"
+actor "You" as you #blue
+boundary "ssh client" as ssh_client_remote #lightblue
+control "ssh daemon" as ssh_daemon_remote #lightblue
+control "sleep" as sleep #lightblue
+end box
+
+group Set up tunnel
+    job -> ssh_client_gh ++ : Open Tunnel on "Your Server"
+    ssh_daemon_remote -> sleep ++ : Keeping the tunnel open for some time
+    {tunnel_forward} ssh_client_gh --> ssh_daemon_remote ++ : Tunnel (Remote Port: 32022 -> Local Port: 22)
+end
+...
+group Connect back to GH Action Runner
+    you -> ssh_client_remote ++ : ssh (Remote Port: 32022)
+    {tunnel_backward} ssh_client_remote --> ssh_daemon_gh ++ : Connect via tunnel
+    {tunnel_backward} <-> {tunnel_forward} : Use \nSSH\nTunnel
+    ssh_daemon_gh -> shell_github ++ : Launch shell
+end
+
+group Work on GitHub Action Runner
+    you <-[#red]-> shell_github : Use GH Action Runner interactively
+end
+@enduml
+----
+
+NOTE: This works only on GitHub (GH)!
+
+== How to enable and use the tunnel
+
+=== Set up your server
+
+TIP: I recommend generating a particular ssh key for your server.
+
+Select an SSH key pair to enable the setup of the tunnel.
+
+On your server add the public key part of the key pair to your `~/.ssh/authorized_keys` (hint: restrict the executable command to `sleep`).
+
+=== Setup the tunnel on GitHub
+
+There are several ways to use the tunnel.
+
+==== Fork this repository
+
+TIP: For your first experience I strongly recommend forking this repository and set up the GH Action on your side.
+
+If you want to run the provided action you have to enable GitHub Actions in your (forked) GH repository (TODO: add a screenshot).
+
+Additionally, you have to set some environment variables as a Secret in your GH repository.
+
+image::screen-shot-secrets.png[]
+
+Add the following secrets
+
+`REVERSE_SSH_HOST`::
+The hostname (or IP address) of your public SSH server.
+It should contain the username, e.g., `me@myserver.tld`
+`REVERSE_SSH_PRIVATE_KEY`:: The contents of your SSH private key file to connect to the respective account.
+`REVERSE_SSH_PUBLIC_KEY`::
+The contents of your SSH public key file for your remote server to connect back to the GH Action Runner. This could also be a number of keys separated by a new line (typically the contents of your `~/.ssh/authorized_keys` file).
+
+==== Copy over the action to your repository
+
+TBD
+
+
+=== Execute the Action
+
+TBD
+
+=== Log back in to the Action Runner
+
+TBD

@@ -1,1 +1,4 @@
 /.idea/
+*.svg
+*.svg.cache
+*.html

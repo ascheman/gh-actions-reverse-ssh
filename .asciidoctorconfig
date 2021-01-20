@@ -1,0 +1,9 @@
+// General settings
+:doctype: book
+:icons: font
+:lang: en
+:numbered:
+:sectnumlevels: 5
+:source-highlighter: coderay
+:toc: left
+:toclevels: 5
