@@ -51,7 +51,7 @@ chmod 755 $HOME
 chmod 700 $HOME/.ssh
 chmod 600 $HOME/.ssh/authorized_keys
 # If all else fails login via password
-# echo "runner:runner" | sudo -E chpasswd
+echo "runner:runner" | sudo -E chpasswd
 
 # Don't forward any inherited agent authentication
 unset SSH_AUTH_SOCK
